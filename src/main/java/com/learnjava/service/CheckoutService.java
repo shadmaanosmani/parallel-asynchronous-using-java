@@ -12,6 +12,7 @@ import static com.learnjava.domain.checkout.CheckoutStatus.FAILURE;
 import static com.learnjava.domain.checkout.CheckoutStatus.SUCCESS;
 import static com.learnjava.util.CommonUtil.startTimer;
 import static com.learnjava.util.CommonUtil.timeTaken;
+import static com.learnjava.util.LoggerUtil.log;
 
 @RequiredArgsConstructor
 public class CheckoutService {
@@ -35,8 +36,28 @@ public class CheckoutService {
 
         }
 
+//        double finalPrice = calculateFinalPrice(cart);
+
+        double finalPrice = calculateFinalPrice_reduce(cart);
+
+        log("Checkout complete and the final price is " + finalPrice);
+
         timeTaken();
-        return new CheckoutResponse(SUCCESS);
+        return new CheckoutResponse(SUCCESS, finalPrice);
+
+    }
+
+    private double calculateFinalPrice(Cart cart) {
+
+        return cart.getCartItemList().parallelStream()
+                .mapToDouble(cartItem -> cartItem.getQuantity() * cartItem.getRate()).sum();
+
+    }
+
+    private double calculateFinalPrice_reduce(Cart cart) {
+
+        return cart.getCartItemList().parallelStream()
+                .mapToDouble(cartItem -> cartItem.getQuantity() * cartItem.getRate()).reduce(0.0, Double::sum);
 
     }
 
